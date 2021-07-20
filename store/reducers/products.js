@@ -15,7 +15,7 @@ export default (state = initialState, action) => {
                 'u1',
                 action.productData.title,
                 action.productData.imageUrl,
-                ation.productData.description, 
+                action.productData.description, 
                 action.productData.price
             );
             return {
