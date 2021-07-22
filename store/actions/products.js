@@ -10,28 +10,46 @@ export const fetchProducts = () => {
 
   return async dispatch => {
 
-    const response = await fetch('https://rn-shopp-c97a0-default-rtdb.firebaseio.com/products.json');
+    try {
+      const response = await fetch('https://rn-shopp-c97a0-default-rtdb.firebaseio.com/products.json');
 
-    const resData = await response.json();
-    const loadedProducts = [];
-
-      for (const key in resData) {
-        loadedProducts.push(new Product(
-          key,
-          'u1',
-          resData[key].title,
-          resData[key].imageUrl,
-          resData[key].description,
-          resData[key].price
-          )
-        );
+      if (!response.ok) {
+        throw new Error('Something went wrong!');
       }
-    dispatch({ type: SET_PRODUCTS, products: loadedProducts });
+
+      const resData = await response.json();
+      const loadedProducts = [];
+
+        for (const key in resData) {
+          loadedProducts.push(new Product(
+            key,
+            'u1',
+            resData[key].title,
+            resData[key].imageUrl,
+            resData[key].description,
+            resData[key].price
+            )
+          );
+        }
+      dispatch({ type: SET_PRODUCTS, products: loadedProducts });
+    } catch (err) {
+      throw err;
+    }
   };
 };
 
 export const deleteProduct = productId => {
-  return { type: DELETE_PRODUCT, pid: productId };
+  return async dispatch => {
+    const response = await fetch(`https://rn-shopp-c97a0-default-rtdb.firebaseio.com/products/${productId}.json`, {
+      method: 'DELETE',
+    });
+
+    if (!response.ok) {
+      throw new Error('Something went wrong');
+    }
+
+    dispatch({ type: DELETE_PRODUCT, pid: productId });
+  };
 };
 
 export const createProduct = (title, description, imageUrl, price) => {
@@ -66,13 +84,33 @@ export const createProduct = (title, description, imageUrl, price) => {
 };
 
 export const updateProduct = (id, title, description, imageUrl) => {
-  return {
-    type: UPDATE_PRODUCT,
-    pid: id,
-    productData: {
-      title,
-      description,
-      imageUrl,
-    }
-  };
+  return async dispatch => {
+
+    const response = await fetch(
+     `https://rn-shopp-c97a0-default-rtdb.firebaseio.com/products/${id}.json`, {
+        method: 'PATCH',
+        headers: {
+          'Content-type': 'application/json'
+        },
+        body: JSON.stringify({
+          title,
+          description,
+          imageUrl,
+        })
+      });
+
+    if (!response.ok) {
+      throw new Error('Something went wrong');
+    }  
+
+    dispatch ({
+      type: UPDATE_PRODUCT,
+      pid: id,
+      productData: {
+        title,
+        description,
+        imageUrl,
+      }
+    });
+  }
 };
